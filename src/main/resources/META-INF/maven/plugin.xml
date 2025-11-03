@@ -1,0 +1,26 @@
+<plugin>
+  <name>JUnit TestDoc Plugin</name>
+  <description>Génère une documentation Markdown à partir du dictionnaire de traces Jboss Logging</description>
+  <goalPrefix>logdoc</goalPrefix>
+
+  <mojos>
+    <mojo>
+      <goal>generate-doc</goal>
+      <implementation>gca.caps.doc.maven.plugin.LogDocMojo</implementation>
+        <parameters>
+            <parameter>
+                <name>outputDirectory</name>
+                <type>java.io.File</type>
+                <required>true</required>
+                <editable>true</editable>
+                <description>Directory where the generated documentation will be written.</description>
+            </parameter>
+        </parameters>
+
+        <configuration>
+            <outputDirectory>${project.build.directory}/logdoc</outputDirectory>
+        </configuration>
+      <phase>generate-sources</phase>
+    </mojo>
+  </mojos>
+</plugin>
