@@ -12,7 +12,6 @@ class MavenProjectLoaderTest {
     void testLoadProjectAndModules() throws Exception {
         File pom = new File("src/test/resources/test-multi-module-project/pom.xml");
         MavenProjectLoader.SimpleProject project = MavenProjectLoader.loadProject(pom);
-
         assertNotNull(project.basedir());
         assertTrue(project.basedir().isDirectory());
 

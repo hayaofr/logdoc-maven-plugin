@@ -23,7 +23,7 @@ public class TestDocMojoFullLog {
         File pom = new File("src/test/resources/test-multi-module-project/pom.xml");
         MavenProjectLoader.SimpleProject project = MavenProjectLoader.loadProject(pom);
         LogDocMojo mojo = new LogDocMojo();
-        Path outputDir = tempDir.resolve("test-docs");
+        Path outputDir = tempDir.resolve("log-docs");
 
         mojo.setOutputDirectory(outputDir.toFile());
         mojo.execute(project.basedir(), project.model());
@@ -37,22 +37,21 @@ public class TestDocMojoFullLog {
 
         // module-a
         Path moduleAIndex = docsRoot.resolve("module-a/index.md");
-        Path moduleADoc1 = docsRoot.resolve("module-a/SampleIT.md");
+        Path moduleADoc1 = docsRoot.resolve("module-a/trace-dictionary.md");
         assertTrue(Files.exists(moduleAIndex), "index.md module-a manquant");
-        assertTrue(Files.exists(moduleADoc1), "SampleIT.md manquant dans module-a");
+        assertTrue(Files.exists(moduleADoc1), "trace-dictionary.md manquant dans module-a");
 
-
-        var expectedResultModuleADoc1 = readResourceFile("module-a-sample-it-expected-file.md");
+        var expectedResultModuleADoc1 = readResourceFile("module-a-dictionary-expected-file.md");
         var contentModuleADoc1 = Files.readString(moduleADoc1).trim();
         assertThat(contentModuleADoc1).isEqualToNormalizingNewlines(expectedResultModuleADoc1);
 
         // module-b
         Path moduleBIndex = docsRoot.resolve("module-b/index.md");
-        Path moduleBDoc1 = docsRoot.resolve("module-b/SampleIT.md");
+        Path moduleBDoc1 = docsRoot.resolve("module-b/trace-dictionary.md");
         assertTrue(Files.exists(moduleBIndex), "index.md module-b manquant");
-        assertTrue(Files.exists(moduleBDoc1), "SampleIT.md manquant dans module-b");
+        assertTrue(Files.exists(moduleBDoc1), "trace-dictionary.md manquant dans module-b");
 
-        var expectedResultModuleBDoc1 = readResourceFile("module-b-sample-it-expected-file.md");
+        var expectedResultModuleBDoc1 = readResourceFile("module-b-dictionary-expected-file.md");
         var contentModuleBDoc1 = Files.readString(moduleBDoc1).trim();
         assertThat(contentModuleBDoc1).isEqualToNormalizingNewlines(expectedResultModuleBDoc1);
 
@@ -78,7 +77,7 @@ public class TestDocMojoFullLog {
         Path doc1 = docsRoot.resolve("trace-dictionary.md");
         assertTrue(Files.exists(doc1), "trace-dictionary.md manquant");
 
-        var expectedResultDoc1 = readResourceFile("simple-project-sample-expected-file.md");
+        var expectedResultDoc1 = readResourceFile("simple-project-dictionary-expected-file.md");
         var contentDoc1 = Files.readString(doc1).trim();
         assertThat(contentDoc1).isEqualToNormalizingNewlines(expectedResultDoc1);
 

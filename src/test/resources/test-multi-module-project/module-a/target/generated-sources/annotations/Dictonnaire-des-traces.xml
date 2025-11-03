@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<annotated-logger>
+  <trace codeApplication="ERPAY" type="TECHNIQUE" coucheEtComposant="" id="0001" niveau="INFO" message="le message" commentaire="" jboss="true" parametresMethode="message"/>
+  <trace codeApplication="ERPAY" type="TECHNIQUE" coucheEtComposant="" id="0002" niveau="ERROR" message="Ca sent le sapin" commentaire="" jboss="true" parametresMethode="cause"/>
+</annotated-logger>
