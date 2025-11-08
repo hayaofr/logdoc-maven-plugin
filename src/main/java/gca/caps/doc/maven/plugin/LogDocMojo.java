@@ -1,6 +1,5 @@
 package gca.caps.doc.maven.plugin;
 
-import org.apache.maven.model.Model;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -10,8 +9,10 @@ import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -34,10 +35,10 @@ public class LogDocMojo extends AbstractMojo {
     }
 
     public void execute() throws MojoExecutionException {
-        execute(project.getBasedir(), project.getModel());
+        execute(project.getBasedir());
     }
 
-    private void processModule(File moduleOutDir, File baseDir) throws Exception {
+    private void processModule(File moduleOutDir, File baseDir) throws ParserConfigurationException, IOException, SAXException {
         Path xmlPath = baseDir.toPath().resolve("target/generated-sources/annotations/Dictonnaire-des-traces.xml");
 
         if (!Files.exists(xmlPath)) {
@@ -65,9 +66,9 @@ public class LogDocMojo extends AbstractMojo {
         getLog().info("Doc de traces générée pour le module : " + baseDir.getName());
     }
 
-    private List<TraceEntry> parseTraces(File xmlFile) throws Exception {
+    private List<TraceEntry> parseTraces(File xmlFile) throws ParserConfigurationException, IOException, SAXException {
         List<TraceEntry> traces = new ArrayList<>();
-        Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(xmlFile);
+        Document doc = DocumentBuilderFactory.newDefaultInstance().newDocumentBuilder().parse(xmlFile);
         NodeList list = doc.getElementsByTagName("trace");
 
         for (int i = 0; i < list.getLength(); i++) {
@@ -94,44 +95,14 @@ public class LogDocMojo extends AbstractMojo {
         }
     }
 
-    protected void execute(File baseDir, Model model) throws MojoExecutionException {
+    protected void execute(File baseDir) throws MojoExecutionException {
         try {
             if (!outputDirectory.exists()) {
                 Files.createDirectories(outputDirectory.toPath());
             }
 
-            if (model.getModules().isEmpty()) {
-                // Cas d’un module simple
-                processModule(outputDirectory, baseDir);
-            } else {
-                // Cas d’un projet parent multi-module
-                List<String> moduleLinks = new ArrayList<>();
-
-                for (String module : model.getModules()) {
-                    File moduleDir = new File(baseDir, module);
-                    File modulePom = new File(moduleDir, "pom.xml");
-                    if (!modulePom.exists()) {
-                        getLog().warn("Pas de pom.xml pour le module " + module);
-                        continue;
-                    }
-
-                    File moduleOutDir = new File(outputDirectory, module);
-                    Files.createDirectories(moduleOutDir.toPath());
-                    processModule(moduleOutDir, moduleDir);
-
-                    moduleLinks.add(String.format("- [%s](%s/index.md)", module, module));
-                }
-
-                // Générer l’index global
-                File indexFile = new File(outputDirectory, "index.md");
-                try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(indexFile.toPath()))) {
-                    writer.println("# Index global des traces\n");
-                    for (String link : moduleLinks) {
-                        writer.println(link);
-                    }
-                }
-                getLog().info("Index global généré : " + indexFile.getAbsolutePath());
-            }
+            File moduleOutDir = new File(outputDirectory, baseDir.getName());
+            processModule(moduleOutDir, baseDir);
 
         } catch (Exception e) {
             throw new MojoExecutionException("Erreur lors de la génération des docs de traces", e);
