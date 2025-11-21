@@ -1,5 +1,6 @@
 package gca.caps.doc.maven.plugin;
 
+import org.apache.maven.model.Model;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -8,12 +9,16 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
-@Mojo(name = "aggregate-logdoc", defaultPhase = LifecyclePhase.VERIFY, threadSafe = true)
+@Mojo(name = "aggregate-logdoc", defaultPhase = LifecyclePhase.VERIFY, threadSafe = true, aggregator = true)
 public class LogDocAggregatorMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -26,6 +31,10 @@ public class LogDocAggregatorMojo extends AbstractMojo {
     }
 
     public void execute() throws MojoExecutionException {
+        execute(project.getBasedir(), project.getModel());
+    }
+
+    protected void execute(File baseDir, Model model) throws MojoExecutionException {
         try {
             if (!outputDirectory.exists()) {
                 Files.createDirectories(outputDirectory.toPath());
@@ -33,21 +42,21 @@ public class LogDocAggregatorMojo extends AbstractMojo {
 
             List<String> moduleLinks = new ArrayList<>();
 
-            // Parcourir les répertoires dans outputDirectory
-            File[] moduleDirs = outputDirectory.listFiles(File::isDirectory);
-            if (moduleDirs == null || moduleDirs.length == 0) {
-                getLog().warn("Aucun répertoire trouvé dans " + outputDirectory.getAbsolutePath());
-                return;
-            }
+            // Parcourir les modules du projet
+            for (var module :model.getModules()) {
+                File moduleDir = new File(baseDir, module);
+                File logDocDir = new File(moduleDir, "target/logdoc");
+                File traceDictionaryFile = new File(logDocDir, module + "/trace-dictionary.md");
 
-            for (File moduleDir : moduleDirs) {
-                File traceDictionaryFile = new File(moduleDir, "trace-dictionary.md");
-                if (!traceDictionaryFile.exists()) {
-                    getLog().warn("Aucun fichier trace-dictionary.md trouvé dans " + moduleDir.getAbsolutePath());
+                if (!logDocDir.exists() || !traceDictionaryFile.exists()) {
+                    getLog().warn("Aucun répertoire logdoc trouvé dans " + moduleDir.getAbsolutePath() + " ou fichier trace-dictionary.md manquant");
                     continue;
                 }
 
-                moduleLinks.add(String.format("- [%s](%s/trace-dictionary.md)", moduleDir.getName(), moduleDir.getName()));
+                // Copier le répertoire logdoc dans outputDirectory
+                copyDirectory(logDocDir.toPath(), outputDirectory.toPath());
+
+                moduleLinks.add(String.format("- [%s](%s/trace-dictionary.md)", module, module));
             }
 
             // Générer l’index global
@@ -62,6 +71,23 @@ public class LogDocAggregatorMojo extends AbstractMojo {
 
         } catch (Exception e) {
             throw new MojoExecutionException("Erreur lors de l'agrégation des docs de traces", e);
+        }
+    }
+
+    private void copyDirectory(Path source, Path target) throws IOException {
+        try (Stream<Path> walk = Files.walk(source)) {
+            walk.forEach(sourcePath -> {
+                try {
+                    Path targetPath = target.resolve(source.relativize(sourcePath));
+                    if (Files.isDirectory(sourcePath)) {
+                        Files.createDirectories(targetPath);
+                    } else {
+                        Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException("Erreur lors de la copie du répertoire", e);
+                }
+            });
         }
     }
 }

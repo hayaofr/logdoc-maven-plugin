@@ -7,19 +7,6 @@
         <mojo>
             <goal>generate-logdoc</goal>
             <implementation>gca.caps.doc.maven.plugin.LogDocMojo</implementation>
-            <parameters>
-                <parameter>
-                    <name>outputDirectory</name>
-                    <type>java.io.File</type>
-                    <required>true</required>
-                    <editable>true</editable>
-                    <description>Directory where the generated documentation will be written.</description>
-                </parameter>
-            </parameters>
-
-            <configuration>
-                <outputDirectory>${project.build.directory}/logdoc</outputDirectory>
-            </configuration>
             <phase>process-sources</phase>
         </mojo>
         <mojo>

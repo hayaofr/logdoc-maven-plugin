@@ -21,13 +21,13 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mojo(name = "generate-logdoc", defaultPhase = LifecyclePhase.VERIFY, threadSafe = true)
+@Mojo(name = "generate-logdoc", defaultPhase = LifecyclePhase.PROCESS_SOURCES, threadSafe = true)
 public class LogDocMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
-    @Parameter(defaultValue = "${project.build.directory}/logdoc", required = true)
+    @Parameter(defaultValue = "${project.build.directory}/logdoc", readonly = true, required = true)
     private File outputDirectory;
 
     public void setOutputDirectory(File outputDirectory) {

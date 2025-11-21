@@ -22,7 +22,7 @@ class LogDocMojoTest {
         File pom = new File("src/test/resources/test-simple-project/pom.xml");
         MavenProjectLoader.SimpleProject project = MavenProjectLoader.loadProject(pom);
         LogDocMojo mojo = new LogDocMojo();
-        Path outputDir = tempDir.resolve("log-docs");
+        Path outputDir = tempDir.resolve("logdoc");
 
         mojo.setOutputDirectory(outputDir.toFile());
         mojo.execute(project.basedir());
@@ -30,7 +30,7 @@ class LogDocMojoTest {
         // ───────────────────────────────
         // 4️⃣ Vérifications
         // ───────────────────────────────
-        Path docsRoot = tempDir.resolve("log-docs/test-simple-project");
+        Path docsRoot = tempDir.resolve("logdoc/test-simple-project");
         assertTrue(Files.exists(docsRoot), "Répertoire test-docs manquant");
         assertTrue(Files.exists(docsRoot.resolve("index.md")), "index.md global manquant");
 
